@@ -1,4 +1,4 @@
-require('extension');
+require('./extension');
 
 $ = require('./object');
 $.Session = require('./session');

@@ -75,6 +75,11 @@ function weobj (o) {
 	
 }
 
-weobj.extend = () => weobj({}).extend(arguments).data;
+weobj.extend = function() {
+	let o = {};
+	for (let i = 0; i < arguments.length; i++)
+		weobj(o).extend(arguments[i]);
+	return o;
+};
 
 module.exports = weobj;
