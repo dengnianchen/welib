@@ -1,4 +1,4 @@
-const qcloud = require('../vendor/wafer2-client-sdk/index');
+const qcloud = require('wafer2-client-sdk');
 
 class Session {
 	

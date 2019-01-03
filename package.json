@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A common library for weapp",
   "main": "index.js",
+  "dependencies": {
+    "wafer2-client-sdk": "git+https://github.com/dengnianchen/wafer2-client-sdk.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
