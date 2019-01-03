@@ -1,4 +1,4 @@
-weobj = require('./object');
-weobj.Session = require('./session');
+$ = require('./object');
+$.Session = require('./session');
 
-module.exports = weobj;
+module.exports = $;
