@@ -43,7 +43,11 @@ function weobj (o) {
 		extend() {
 			for (let i = 0; i < arguments.length; i++) {
 				const source = arguments[i];
-				weobj(source).each((key, value) => o[key] = value, true);
+				if (source instanceof Array) {
+					for (let item of source)
+						this.extend(item);
+				} else if (source instanceof Object)
+					weobj(source).each((key, value) => o[key] = value, true);
 			}
 			return this;
 		},
