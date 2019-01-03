@@ -75,13 +75,6 @@ function weobj (o) {
 	
 }
 
-weobj.extend = function() {
-	let o = {};
-	for (let i = 0; i < arguments.length; i++) {
-		const source = arguments[i];
-		weobj(source).each((key, value) => o[key] = value, true);
-	}
-	return o;
-};
+weobj.extend = () => weobj({}).extend(arguments).data;
 
 module.exports = weobj;
