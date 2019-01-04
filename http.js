@@ -6,6 +6,26 @@ const qcloud = require('wafer2-client-sdk');
 class Http {
 	
 	/**
+	 * 以当前微信账号进行登录。
+	 * 用户第一次使用小程序时需授权才可获得其微信账号信息，此时需设置参数withAuth=true，
+	 * 且需要在 <button open-type="getUserInfo" bindgetuserinfo="..."></button>
+	 * 的回调函数中调用。
+	 * 详见： https://developers.weixin.qq.com/blogdetail?action=get_post_info&lang=zh_CN&token=&docid=0000a26e1aca6012e896a517556c01
+	 *
+	 * @param withAuth 是否以授权方式登录
+	 * @returns {Promise}
+	 * @author Deng Nianchen
+	 */
+	static login(withAuth) {
+		return new Promise((resolve, reject) => {
+			(withAuth ? qcloud.login : qcloud.loginWithCode)({
+				success: res => resolve(res),
+				fail: err => reject(err)
+			});
+		});
+	}
+	
+	/**
 	 * qcloud.request方法的Promise封装，URL自动添加根路径，解析请求方法，自适应登录态/非登
 	 * 录态。若成功则提供(data, result)，其中data为响应对象中的数据，result为原始响应对象。
 	 * 若失败则提供ex，包含错误信息。
