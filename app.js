@@ -1,21 +1,6 @@
 class App {
 	
 	/**
-	 * 模块初始化函数
-	 * 设置App全局配置
-	 * 支持的配置字段如下：
-	 * app: 可选，App初始的全局数据
-	 *
-	 * @param config 配置信息
-	 * @protected
-	 * @author Deng Nianchen
-	 */
-	static _initial(config) {
-		if (config.app)
-			$(App.all).extend(config.app);
-	}
-	
-	/**
 	 * 获取App全局数据对象
 	 *
 	 * @returns {*}
@@ -91,6 +76,8 @@ class App {
 	 * @author Deng Nianchen
 	 */
 	static get all() {
+		if (!getApp().globalData)
+			getApp().globalData = {};
 		return getApp().globalData;
 	}
 	
