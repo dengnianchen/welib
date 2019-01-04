@@ -94,7 +94,7 @@ let pageLoadingFunction = function() {};
 				this.setLoading(true);
 				await pageLoadingFunction.call(this);
 				// 设置全局配置
-				this.setData({ gconfig: $.App.config });
+				this.setData({ '$': $.App.all });
 				// 调用onLoad函数（若存在）进行页面加载
 				if (pageOnLoad instanceof Function)
 					await pageOnLoad.call(this, options);
