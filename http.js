@@ -1,9 +1,32 @@
 const qcloud = require('wafer2-client-sdk');
 
 /**
+ * 主机地址
+ * @type {String}
+ */
+let host = '';
+
+/**
  * 所有请求方法若失败均返回错误对象，该对象包含statusCode, type, message三个字段
  */
 class Http {
+	
+	/**
+	 * 模块初始化函数
+	 * 设置主机地址和登录地址
+	 * 支持的配置字段如下：
+	 * host: 必选，指定用于所有请求的主机地址
+	 *
+	 * @param config 配置信息
+	 * @protected
+	 * @author Deng Nianchen
+	 */
+	static _initial(config) {
+		if (!config.host)
+			throw new Error("Failed to initialize module welib.HTTP: missing field 'host' in config");
+		host = config.host;
+		qcloud.setLoginUrl(`${host}/login`);
+	}
 	
 	/**
 	 * 以当前微信账号进行登录。
@@ -12,7 +35,7 @@ class Http {
 	 * 的回调函数中调用。
 	 * 详见： https://developers.weixin.qq.com/blogdetail?action=get_post_info&lang=zh_CN&token=&docid=0000a26e1aca6012e896a517556c01
 	 *
-	 * @param withAuth 是否以授权方式登录
+	 * @param {boolean?} withAuth 是否以授权方式登录
 	 * @returns {Promise}
 	 * @author Deng Nianchen
 	 */
@@ -57,7 +80,7 @@ class Http {
 		return new Promise((resolve, reject) => {
 			// 3. 组合所有选项
 			const requestOptions = $.extend(options, {
-				url: `${config.service.host}/weapp${relativeUrl}`,
+				url: `${host}${relativeUrl}`,
 				method: method,
 				login: requestWithLogin,
 				data: data,
@@ -114,7 +137,7 @@ class Http {
 			throw new Error("missing e or e.detail.formId");
 		return new Promise((resolve, reject) => {
 			qcloud.upload($.extend(options, {
-				url: `${config.service.host}/weapp${url}`,
+				url: `${host}${url}`,
 				header: $.extend({ 'X-WX-Formid': e.detail.formId },
 					options ? options.header : null),
 				login: true,
