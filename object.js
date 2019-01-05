@@ -3,18 +3,15 @@ function weobj (o) {
 	return {
 		data: o,
 		
-		isEmpty() {
+		isEmpty(excludeFunction) {
 			let isEmpty = true;
-			this.each(() => {
-				isEmpty = false;
-				return false;
-			});
+			this.each(() => isEmpty = false, excludeFunction);
 			return isEmpty;
 		},
 		
 		urlParams() {
 			const params = [];
-			this.each((key, value) => params.push(`${key}=${value}`));
+			this.each((key, value) => params.push(`${key}=${value}`), true);
 			return params.join("&");
 		},
 		
@@ -47,30 +44,23 @@ function weobj (o) {
 					for (let item of source)
 						this.extend(item);
 				} else if (source instanceof Object)
-					weobj(source).each((key, value) => o[key] = value, true);
+					weobj(source).each((key, value) => (o[key] = value) || true);
 			}
 			return this;
 		},
 		
-		each(callback, includeFunction) {
+		each(callback, excludeFunction) {
 			for (let key in o) {
 				if (!o.hasOwnProperty(key))
 					continue;
-				if (typeof(o[key]) === 'function' && !includeFunction)
+				if (excludeFunction && typeof o[key] !== 'function')
 					continue;
 				if (callback(key, o[key]) === false)
 					break;
 			}
 			return this;
-		},
-		
-		eachFunction (callback) {
-			return this.each((key, value) => {
-				if (typeof(value) !== 'function')
-					return;
-				return callback(key, value);
-			}, true);
 		}
+		
 	};
 	
 }
