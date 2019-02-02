@@ -111,7 +111,7 @@ class Http {
 			throw new Error("missing e or e.detail.formId");
 		if (urlWithMethod === undefined)
 			urlWithMethod = "/noop";
-		return request(urlWithMethod, data, $.extend(options, {
+		return Http.request(urlWithMethod, data, $.extend(options, {
 			header: $.extend({ 'X-WX-Formid': e.detail.formId },
 				options ? options.header : null),
 			login: true
