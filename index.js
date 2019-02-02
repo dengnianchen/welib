@@ -5,6 +5,7 @@ $.Session = require('./session');
 $.Http = require('./http');
 $.PageExt = require('./page-ext');
 $.App = require('./app');
+$.Sys = require('./sys');
 
 /**
  * 初始化Welib库，目前支持的配置如下（问号表示可选字段）：
