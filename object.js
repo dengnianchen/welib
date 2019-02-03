@@ -53,7 +53,7 @@ function weobj (o) {
 			for (let key in o) {
 				if (!o.hasOwnProperty(key))
 					continue;
-				if (excludeFunction && typeof o[key] !== 'function')
+				if (excludeFunction && typeof o[key] === 'function')
 					continue;
 				if (callback(key, o[key]) === false)
 					break;

@@ -7,7 +7,9 @@ const qcloud = require('wafer2-client-sdk');
 let host = '';
 
 /**
- * 所有请求方法若失败均返回错误对象，该对象包含statusCode, type, message三个字段
+ * 所有请求方法若失败均返回通用错误对象$.Err
+ *
+ * @see $.Err
  */
 class Http {
 	
@@ -43,7 +45,7 @@ class Http {
 		return new Promise((resolve, reject) => {
 			(withAuth ? qcloud.login : qcloud.loginWithCode)({
 				success: res => resolve(res),
-				fail: err => reject(err)
+				fail: err => reject($.Err.LOGIN_FAIL(err.message))
 			});
 		});
 	}
@@ -85,7 +87,7 @@ class Http {
 				login: requestWithLogin,
 				data: data,
 				success: result => resolve(result.data.data, result),
-				fail: ex => reject(ex)
+				fail: ex => reject($.Err.fromResponseError(ex))
 			});
 			// 4. 发起请求并处理响应结果
 			qcloud.request(requestOptions);
@@ -108,7 +110,7 @@ class Http {
 	 */
 	static submit(e, urlWithMethod, data, options) {
 		if (!e || !e.detail.formId)
-			throw new Error("missing e or e.detail.formId");
+			throw $.Err.FAIL("missing e or e.detail.formId");
 		if (urlWithMethod === undefined)
 			urlWithMethod = "/noop";
 		return Http.request(urlWithMethod, data, $.extend(options, {
@@ -134,7 +136,7 @@ class Http {
 	 */
 	static upload(e, url, file, name, data, options) {
 		if (!e || !e.detail.formId)
-			throw new Error("missing e or e.detail.formId");
+			throw $.Err.FAIL("missing e or e.detail.formId");
 		return new Promise((resolve, reject) => {
 			qcloud.upload($.extend(options, {
 				url: `${host}${url}`,
@@ -147,7 +149,7 @@ class Http {
 				success: result => {
 					resolve(result.data.data, result)
 				},
-				fail: ex => reject(ex)
+				fail: ex => reject($.Err.fromResponseError(ex))
 			}));
 		});
 	}
