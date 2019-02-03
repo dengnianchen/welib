@@ -138,7 +138,7 @@ let pageLoadingFunction = function() {};
 					return;
 				}
 				try {
-					await this.onLoad(this.loadOptions);
+					await this.onLoad(this.loadOptions, true);
 				} catch (ex) {
 					$.Modal.showError('页面刷新失败', ex);
 				} finally {
