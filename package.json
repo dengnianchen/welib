@@ -1,5 +1,5 @@
 {
-  "name": "@welib",
+  "name": "welib",
   "version": "1.4.0",
   "description": "A common library for weapp",
   "main": "index.js",
