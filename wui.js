@@ -13,6 +13,8 @@ class Wui {
 	static _initial(config) {
 		if (config.wui)
 			Wui.config = config.wui;
+		else
+			Wui.config = {};
 	}
 	
 }
