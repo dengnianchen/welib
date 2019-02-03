@@ -1,18 +1,20 @@
 {
   "name": "welib",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A common library for weapp",
   "main": "index.js",
   "dependencies": {
-    "miniprogram-api-typings": "^2.4.2",
     "wafer2-client-sdk": "git+https://github.com/dengnianchen/wafer2-client-sdk.git"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "^2.4.2"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dengnianchen/welib.git"
+    "url": "https://github.com/dengnianchen/welib.git"
   },
   "keywords": [
     "weapp"
