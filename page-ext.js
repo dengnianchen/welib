@@ -99,9 +99,9 @@ let pageLoadingFunction = function() {};
 		
 		// 包装onLoad函数，进行加载时的通用操作
 		const pageOnLoad = page.onLoad;
-		page.onLoad = async function(options) {
+		page.onLoad = async function(options, isPulldownRefresh = false) {
 			try {
-				this.setLoading(true);
+				this.setLoading(!isPulldownRefresh && true);
 				this.loadOptions = options;
 				await pageLoadingFunction.call(this);
 				// 设置全局配置
@@ -113,6 +113,8 @@ let pageLoadingFunction = function() {};
 				// 页面加载完成后，调用onShow函数执行页面显示相关逻辑
 				this.onShow();
 			} catch (ex) {
+				if (isPulldownRefresh)
+					throw ex;
 				this.setLoading(false, ex);
 			}
 		};
@@ -127,6 +129,23 @@ let pageLoadingFunction = function() {};
 			if (pageOnShow instanceof Function)
 				await pageOnShow.call(this);
 		};
+		
+		// 若页面没有实现onPullDownRefresh函数，则为其实现默认逻辑为刷新整个页面的内容
+		if (!page.onPullDownRefresh) {
+			page.onPullDownRefresh = async function() {
+				if (this.isLoading() || this.data.loadingError) {
+					wx.stopPullDownRefresh();
+					return;
+				}
+				try {
+					await this.onLoad(this.loadOptions);
+				} catch (ex) {
+					$.Modal.showError('页面刷新失败', ex);
+				} finally {
+					wx.stopPullDownRefresh();
+				}
+			}
+		}
 		
 		// 调用小程序默认的Page函数进行页面初始化
 		originPageFunction(page);
