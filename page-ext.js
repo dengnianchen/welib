@@ -54,6 +54,16 @@ let pageUtils = {
 	},
 	
 	/**
+	 * 获取当前页面是否正在加载
+	 *
+	 * @returns {boolean} 当前页面是否正在加载
+	 * @author Deng Nianchen
+	 */
+	isLoading() {
+		return this.data.loading;
+	},
+	
+	/**
 	 * 重新载入当前页面
 	 *
 	 * @author Deng Nianchen
@@ -100,9 +110,22 @@ let pageLoadingFunction = function() {};
 				if (pageOnLoad instanceof Function)
 					await pageOnLoad.call(this, options);
 				this.setLoading(false);
+				// 页面加载完成后，调用onShow函数执行页面显示相关逻辑
+				this.onShow();
 			} catch (ex) {
 				this.setLoading(false, ex);
 			}
+		};
+		
+		// 包装onShow函数，若当前页面正在加载（onLoad正在执行）则onShow函数将在页面
+		// 加载完成后调用
+		const pageOnShow = page.onShow;
+		page.onShow = async function() {
+			if (this.isLoading())
+				return;
+			// 调用onShow函数（若存在）进行页面加载
+			if (pageOnShow instanceof Function)
+				await pageOnShow.call(this);
 		};
 		
 		// 调用小程序默认的Page函数进行页面初始化
