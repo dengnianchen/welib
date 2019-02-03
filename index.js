@@ -8,6 +8,7 @@ $.App = require('./app');
 $.Sys = require('./sys');
 $.Modal = require('./modal');
 $.Err = require('./err');
+$.Wui = require('./wui');
 
 /**
  * 初始化Welib库，目前支持的配置如下（问号表示可选字段）：
