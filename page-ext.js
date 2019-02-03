@@ -48,7 +48,7 @@ let pageUtils = {
 			console.log('加载失败', ex);
 			this.setData({
 				loading: false,
-				loadingError: { type: ex.type, message: ex.message }
+				loadingError: ex
 			});
 		}
 	},
@@ -60,7 +60,7 @@ let pageUtils = {
 	 */
 	reloadPage() {
 		console.log ("Reload page");
-		wx.redirectTo({ url: this.getPath() });
+		this.onLoad(this.loadOptions);
 	}
 	
 };
@@ -92,6 +92,7 @@ let pageLoadingFunction = function() {};
 		page.onLoad = async function(options) {
 			try {
 				this.setLoading(true);
+				this.loadOptions = options;
 				await pageLoadingFunction.call(this);
 				// 设置全局配置
 				this.setData({ '$': $.App.all });
