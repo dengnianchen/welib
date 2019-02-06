@@ -17,10 +17,10 @@ $.String = require('./string');
  * pageBeforeLoad?  页面初始化定制函数
  * wui?             Wui组件配置，参见各Wui组件说明文档
  *
- * @param {Object} config 配置信息
+ * @param {Object?} config 配置信息
  * @author Deng Nianchen
  */
-$.initial = function(config) {
+$.initial = function(config = {}) {
 	$($).each((key, value) => {
 		if (typeof value._initial === "function")
 			value._initial(config);
