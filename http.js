@@ -4,7 +4,7 @@ const qcloud = require('wafer2-client-sdk');
  * 主机地址
  * @type {String}
  */
-let host = '';
+let host = null;
 
 /**
  * 所有请求方法若失败均返回通用错误对象$.Err
@@ -17,7 +17,7 @@ class Http {
 	 * 模块初始化函数
 	 * 设置主机地址和登录地址
 	 * 支持的配置字段如下：
-	 * host: 必选，指定用于所有请求的主机地址
+	 * host: 可选，指定用于所有请求的主机地址，若未指定，则无法调用该模块的任何函数
 	 *
 	 * @param config 配置信息
 	 * @protected
@@ -25,7 +25,7 @@ class Http {
 	 */
 	static _initial(config) {
 		if (!config.host)
-			throw new Error("Failed to initialize module welib.HTTP: missing field 'host' in config");
+			return;
 		host = config.host;
 		qcloud.setLoginUrl(`${host}/login`);
 	}
@@ -42,6 +42,8 @@ class Http {
 	 * @author Deng Nianchen
 	 */
 	static login(withAuth) {
+		if (!host)
+			throw $.Err.FAIL("$.Http is not initialized: host is not configured");
 		return new Promise((resolve, reject) => {
 			(withAuth ? qcloud.login : qcloud.loginWithCode)({
 				success: res => resolve(res),
@@ -65,7 +67,9 @@ class Http {
 	 * @author Deng Nianchen
 	 */
 	static request(urlWithMethod, data, options) {
-		
+		if (!host)
+			throw $.Err.FAIL("$.Http is not initialized: host is not configured");
+
 		// 1. 将urlWithMethod拆分为method和relativeUrl
 		const splitPosition = urlWithMethod.indexOf(' ');
 		const method = splitPosition === -1 ? 'GET' :
@@ -109,6 +113,8 @@ class Http {
 	 * @see request
 	 */
 	static submit(e, urlWithMethod, data, options) {
+		if (!host)
+			throw $.Err.FAIL("$.Http is not initialized: host is not configured");
 		if (!e || !e.detail.formId)
 			throw $.Err.FAIL("missing e or e.detail.formId");
 		if (urlWithMethod === undefined)
@@ -135,6 +141,8 @@ class Http {
 	 * @author Deng Nianchen
 	 */
 	static upload(e, url, file, name, data, options) {
+		if (!host)
+			throw $.Err.FAIL("$.Http is not initialized: host is not configured");
 		if (!e || !e.detail.formId)
 			throw $.Err.FAIL("missing e or e.detail.formId");
 		return new Promise((resolve, reject) => {

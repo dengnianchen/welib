@@ -13,8 +13,9 @@ $.String = require('./string');
 
 /**
  * 初始化Welib库，目前支持的配置如下（问号表示可选字段）：
- * host             指定用于所有请求的主机地址
+ * host?            指定用于所有请求的主机地址
  * pageBeforeLoad?  页面初始化定制函数
+ * wui?             Wui组件配置，参见各Wui组件说明文档
  *
  * @param {Object} config 配置信息
  * @author Deng Nianchen
