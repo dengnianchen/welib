@@ -76,6 +76,28 @@ let pageUtils = {
 };
 
 
+
+/**
+ * 扩展Page静态函数，提供页面有关的全局工具函数
+ *
+ * @author Deng Nianchen
+ */
+let pageStaticFunctions = {
+	
+	/**
+	 * 获取当前页面对象
+	 *
+	 * @returns {Page.PageInstance<{}, {}> & {}}
+	 */
+	current() {
+		let pages = getCurrentPages();
+		return pages[pages.length - 1];
+	}
+	
+};
+
+
+
 /**
  * 页面初始化定制函数
  *
@@ -90,6 +112,7 @@ let pageLoadingFunction = function() {};
  * @author Deng Nianchen
  */
 (function () {
+	
 	const originPageFunction = Page;
 	Page = function(page) {
 		// 添加页面数据loading=true，用于显示“加载中”提示画面
@@ -150,6 +173,10 @@ let pageLoadingFunction = function() {};
 		// 调用小程序默认的Page函数进行页面初始化
 		originPageFunction(page);
 	};
+	
+	// 插入静态函数
+	$(Page).extend(pageStaticFunctions);
+	
 })();
 
 /**
