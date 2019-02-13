@@ -44,7 +44,12 @@ function weobj (o) {
 					for (let item of source)
 						this.extend(item);
 				} else if (source instanceof Object)
-					weobj(source).each((key, value) => (o[key] = value) || true);
+					weobj(source).each((key, value) => {
+						if (o[key] instanceof Object && value instanceof Object)
+							weobj(o[key]).extend(value);
+						else
+							o[key] = value;
+					});
 			}
 			return this;
 		},

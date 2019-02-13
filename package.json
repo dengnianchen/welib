@@ -1,6 +1,6 @@
 {
   "name": "welib",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "A common library for weapp",
   "main": "index.js",
   "dependencies": {

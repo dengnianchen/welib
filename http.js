@@ -93,6 +93,11 @@ class Http {
 				success: result => resolve(result.data.data, result),
 				fail: ex => reject($.Err.fromResponseError(ex))
 			});
+			if (method !== 'GET')
+				$(requestOptions).extend({
+					header: { 'content-type': 'application/x-www-form-urlencoded' }
+				});
+			
 			// 4. 发起请求并处理响应结果
 			qcloud.request(requestOptions);
 		});
@@ -120,8 +125,7 @@ class Http {
 		if (urlWithMethod === undefined)
 			urlWithMethod = "/noop";
 		return Http.request(urlWithMethod, data, $.extend(options, {
-			header: $.extend({ 'X-WX-Formid': e.detail.formId },
-				options ? options.header : null),
+			header: { 'X-WX-Formid': e.detail.formId },
 			login: true
 		}));
 	}
@@ -148,8 +152,7 @@ class Http {
 		return new Promise((resolve, reject) => {
 			qcloud.upload($.extend(options, {
 				url: `${host}${url}`,
-				header: $.extend({ 'X-WX-Formid': e.detail.formId },
-					options ? options.header : null),
+				header: { 'X-WX-Formid': e.detail.formId },
 				login: true,
 				filePath: file,
 				name: name,
