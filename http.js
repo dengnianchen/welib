@@ -57,16 +57,19 @@ class Http {
 	 * 录态。若成功则提供(data, result)，其中data为响应对象中的数据，result为原始响应对象。
 	 * 若失败则提供ex，包含错误信息。
 	 *
-	 * @param {String}  urlWithMethod 包含请求方法的URL相对路径，格式为：[method] url。
-	 *                                若省略请求方法则默认为GET。
-	 *                                范例："PUT /user", "/user" = "GET /user"
-	 * @param {Object?} data          随请求提交的数据
-	 * @param {Object?} options       请求选项，同request函数的options，但是忽略
-	 *                                url, method, data, success, fail五个选项
+	 * @param {String}  urlWithMethod   包含请求方法的URL相对路径，格式为：[method] url。
+	 *                                  若省略请求方法则默认为GET。
+	 *                                  范例：
+	 *                                  1. "PUT /user"
+	 *                                  2. "/user"（等价于"GET /user"）
+	 * @param {Object?} data            随请求提交的数据
+	 * @param {Object?} options         请求选项，同request函数的options，但是忽略
+	 *                                  url, method, data, success, fail五个选项
+	 * @param {Class?}  returnType      返回数据的类型，若未指定则返回原始数据
 	 * @return {Promise}
 	 * @author Deng Nianchen
 	 */
-	static request(urlWithMethod, data, options) {
+	static request(urlWithMethod, data, options, returnType) {
 		if (!host)
 			throw $.Err.FAIL("$.Http is not initialized: host is not configured");
 
@@ -90,7 +93,9 @@ class Http {
 				method: method,
 				login: requestWithLogin,
 				data: data,
-				success: result => resolve(result.data.data, result),
+				success: result => resolve(returnType ?
+					new returnType(result.data.data) :
+					result.data.data, result),
 				fail: ex => reject($.Err.fromResponseError(ex))
 			});
 			if (method !== 'GET')
@@ -108,16 +113,17 @@ class Http {
 	 * 该方法始终以登陆态发起请求。
 	 * 注：仅在访问受限的资源路径（需要登陆才能访问的路径）时表单ID才会被后台收集。
 	 *
-	 * @param {Object}  e             表单提交事件
-	 * @param {String?} urlWithMethod 包含请求方法的URL相对路径，见request函数。未指定则
-	 *                                默认为 /noop
-	 * @param {Object?} data          随请求提交的数据
-	 * @param {Object?} options       请求选项，见request函数
+	 * @param {Object}  e               表单提交事件
+	 * @param {String?} urlWithMethod   包含请求方法的URL相对路径，见request函数。
+	 *                                  未指定则默认为 /noop
+	 * @param {Object?} data            随请求提交的数据
+	 * @param {Object?} options         请求选项，见request函数
+	 * @param {Class?}  returnType      返回数据的类型，若未指定则返回原始数据
 	 * @return {Promise}
 	 * @author Deng Nianchen
 	 * @see request
 	 */
-	static submit(e, urlWithMethod, data, options) {
+	static submit(e, urlWithMethod, data, options, returnType) {
 		if (!host)
 			throw $.Err.FAIL("$.Http is not initialized: host is not configured");
 		if (!e || !e.detail.formId)
@@ -127,24 +133,25 @@ class Http {
 		return Http.request(urlWithMethod, data, $.extend(options, {
 			header: { 'X-WX-Formid': e.detail.formId },
 			login: true
-		}));
+		}), returnType);
 	}
 	
 	/**
 	 * 上传文件。该方法始终以登录态发起请求，并添加由submit事件提供的表单ID到请求头。
 	 *
-	 * @param {Object}  e       表单提交事件
-	 * @param {String}  url     URL相对路径
-	 * @param {String}  file    要上传的文件路径
-	 * @param {String}  name    提供给服务器的文件名
-	 * @param {Object?} data    随请求提交的数据
-	 * @param {Object?} options 请求选项，见request函数
+	 * @param {Object}  e           表单提交事件
+	 * @param {String}  url         URL相对路径
+	 * @param {String}  file        要上传的文件路径
+	 * @param {String}  name        提供给服务器的文件名
+	 * @param {Object?} data        随请求提交的数据
+	 * @param {Object?} options     请求选项，见request函数
+	 * @param {Class?}  returnType  返回数据的类型，若未指定则返回原始数据
 	 * @returns {Promise}
 	 * @see request
 	 * @see submit
 	 * @author Deng Nianchen
 	 */
-	static upload(e, url, file, name, data, options) {
+	static upload(e, url, file, name, data, options, returnType) {
 		if (!host)
 			throw $.Err.FAIL("$.Http is not initialized: host is not configured");
 		if (!e || !e.detail.formId)
@@ -157,9 +164,9 @@ class Http {
 				filePath: file,
 				name: name,
 				formData: data,
-				success: result => {
-					resolve(result.data.data, result)
-				},
+				success: result => resolve(returnType ?
+					new returnType(result.data.data) :
+					result.data.data, result),
 				fail: ex => reject($.Err.fromResponseError(ex))
 			}));
 		});
