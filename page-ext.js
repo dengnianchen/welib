@@ -170,13 +170,6 @@ let pageLoadingFunction = function() {};
 			}
 		}
 		
-		// 包装setData函数，解决this.data获得的对象缺失函数的问题
-		const pageSetData = page.setData;
-		page.setData = function(data, callback) {
-			pageSetData.call(this, data, callback);
-			$(this.data).extend(data);
-		};
-		
 		// 调用小程序默认的Page函数进行页面初始化
 		originPageFunction(page);
 	};
