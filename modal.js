@@ -57,7 +57,7 @@ class Modal {
 						content :
 						JSON.stringify(content)),
 				success: res => resolve(res),
-				fail: () => reject
+				fail: () => reject()
 			}));
 		});
 	};
