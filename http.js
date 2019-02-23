@@ -177,7 +177,7 @@ class Http {
 	 *
 	 * @param {object}  result  响应对象，包含响应数据
 	 * @param {Class}   type    返回数据的类型
-	 * @returns {*} 处理后的数据，其中字段_httpResponse包含原始请求对象
+	 * @returns {*} 处理后的数据
 	 * @private
 	 * @author Deng Nianchen
 	 */
@@ -190,7 +190,6 @@ class Http {
 			else
 				returnData = returnData === null ? null : new type(returnData);
 		}
-		returnData._httpResponse = result;
 		return returnData;
 	}
 
