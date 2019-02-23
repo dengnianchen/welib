@@ -93,9 +93,7 @@ class Http {
 				method: method,
 				login: requestWithLogin,
 				data: data,
-				success: result => resolve(returnType ?
-					new returnType(result.data.data) :
-					result.data.data, result),
+				success: result => resolve(Http._handleResult(result, returnType)),
 				fail: ex => reject($.Err.fromResponseError(ex))
 			});
 			if (method !== 'GET')
@@ -164,12 +162,36 @@ class Http {
 				filePath: file,
 				name: name,
 				formData: data,
-				success: result => resolve(returnType ?
-					new returnType(result.data.data) :
-					result.data.data, result),
+				success: result => resolve(Http._handleResult(result, returnType)),
 				fail: ex => reject($.Err.fromResponseError(ex))
 			}));
 		});
+	}
+	
+	/**
+	 * 对请求的响应数据进行类型转换。
+	 *
+	 * 若响应数据为数组，则对其中每一个元素进行类型转换。
+	 *
+	 * 若未指定返回类型，则返回原始响应数据。
+	 *
+	 * @param {object}  result  响应对象，包含响应数据
+	 * @param {Class}   type    返回数据的类型
+	 * @returns {*} 处理后的数据，其中字段_httpResponse包含原始请求对象
+	 * @private
+	 * @author Deng Nianchen
+	 */
+	static _handleResult(result, type) {
+		let returnData = result.data.data;
+		delete result.data.data;
+		if (type) {
+			if (returnData instanceof Array)
+				returnData = returnData.map((value) => new type(value));
+			else
+				returnData = new type(returnData);
+		}
+		returnData._httpResponse = result;
+		return returnData;
 	}
 
 }
