@@ -186,9 +186,9 @@ class Http {
 		delete result.data.data;
 		if (type) {
 			if (returnData instanceof Array)
-				returnData = returnData.map((value) => new type(value));
+				returnData = returnData.map((value) => value === null ? null : new type(value));
 			else
-				returnData = new type(returnData);
+				returnData = returnData === null ? null : new type(returnData);
 		}
 		returnData._httpResponse = result;
 		return returnData;
