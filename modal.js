@@ -40,25 +40,25 @@ class Modal {
 	/**
 	 * 显示提示对话框
 	 *
-	 * @param title {string} 提示框标题
-	 * @param content {string} 提示框内容
+	 * @param {string} title 提示框标题
+	 * @param {string} content 提示框内容
+	 * @param {object} options 可以指定除title, content, success, fail之外的其他选项，参考微信API文档：wx.showModal
 	 * @returns {Promise}
 	 * @author Deng Nianchen
 	 */
-	static show(title, content) {
+	static show(title, content, options = {}) {
 		wx.hideToast();
 		return new Promise((resolve, reject) => {
-			wx.showModal({
+			wx.showModal($.extend(options, {
 				title,
 				content: !content ?
 					'' :
 					(content.constructor === String ?
 						content :
 						JSON.stringify(content)),
-				showCancel: false,
 				success: res => resolve(res),
 				fail: () => reject
-			})
+			}));
 		});
 	};
 	
@@ -81,7 +81,7 @@ class Modal {
 			errorMessage = ex.brief;
 		else
 			errorMessage = ex.toString();
-		return Modal.show(title, errorMessage);
+		return Modal.show(title, errorMessage, { showCancel: false });
 	};
 	
 }
