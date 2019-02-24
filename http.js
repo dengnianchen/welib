@@ -67,6 +67,7 @@ class Http {
 	 *                                  url, method, data, success, fail五个选项
 	 * @param {Class?}  returnType      返回数据的类型，若未指定则返回原始数据
 	 * @return {Promise}
+	 * @see _handleResult
 	 * @author Deng Nianchen
 	 */
 	static request(urlWithMethod, data, options, returnType) {
@@ -120,6 +121,7 @@ class Http {
 	 * @return {Promise}
 	 * @author Deng Nianchen
 	 * @see request
+	 * @see _handleResult
 	 */
 	static submit(e, urlWithMethod, data, options, returnType) {
 		if (!host)
@@ -147,6 +149,7 @@ class Http {
 	 * @returns {Promise}
 	 * @see request
 	 * @see submit
+	 * @see _handleResult
 	 * @author Deng Nianchen
 	 */
 	static upload(e, url, file, name, data, options, returnType) {
@@ -173,23 +176,36 @@ class Http {
 	 *
 	 * 若响应数据为数组，则对其中每一个元素进行类型转换。
 	 *
+	 * 若指定的数据类型为数组，则依次对响应数据中的元素进行的类型转换（此时响应数据必须为
+	 * 数组类型）。若其中的元素仍为数组，则会对该数组中的每个元素都进行相应的类型转换。
+	 *
 	 * 若未指定返回类型，则返回原始响应数据。
 	 *
-	 * @param {object}  result  响应对象，包含响应数据
-	 * @param {Class}   type    返回数据的类型
+	 * @param {object}          result  响应对象，包含响应数据
+	 * @param {Class|Class[]}   type    返回数据的类型
 	 * @returns {*} 处理后的数据
 	 * @private
 	 * @author Deng Nianchen
 	 */
 	static _handleResult(result, type) {
 		let returnData = result.data.data;
-		delete result.data.data;
-		if (type) {
-			if (returnData instanceof Array)
-				returnData = returnData.map((value) => value === null ? null : new type(value));
-			else
-				returnData = returnData === null ? null : new type(returnData);
+		if (!type || returnData === null)
+			return returnData;
+		if (type instanceof Array) {
+			if (!(returnData instanceof Array))
+				throw $.Err.FAIL("Type is array but response data is not array");
+			returnData = returnData.map(
+				(value, index) => {
+					return value === null ? null :
+						value instanceof Array ? value.map(value1 => new type[index](value1)) :
+							new type[index](value);
+				});
 		}
+		if (returnData instanceof Array) {
+			returnData = returnData.map(
+				(value) => value === null ? null : new type(value));
+		} else
+			returnData = new type(returnData);
 		return returnData;
 	}
 
