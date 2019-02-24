@@ -65,7 +65,7 @@ class Http {
 	 * @param {Object?} data            随请求提交的数据
 	 * @param {Object?} options         请求选项，同request函数的options，但是忽略
 	 *                                  url, method, data, success, fail五个选项
-	 * @param {Class?}  returnType      返回数据的类型，若未指定则返回原始数据
+	 * @param {Class|Class[]?}  returnType      返回数据的类型，若未指定则返回原始数据
 	 * @return {Promise}
 	 * @see _handleResult
 	 * @author Deng Nianchen
@@ -93,7 +93,7 @@ class Http {
 				url: `${host}${relativeUrl}`,
 				method: method,
 				login: requestWithLogin,
-				data: data,
+				data: Http._handleRequestData(data),
 				success: result => resolve(Http._handleResult(result, returnType)),
 				fail: ex => reject($.Err.fromResponseError(ex))
 			});
@@ -117,7 +117,7 @@ class Http {
 	 *                                  未指定则默认为 /noop
 	 * @param {Object?} data            随请求提交的数据
 	 * @param {Object?} options         请求选项，见request函数
-	 * @param {Class?}  returnType      返回数据的类型，若未指定则返回原始数据
+	 * @param {Class|Class[]?}  returnType      返回数据的类型，若未指定则返回原始数据
 	 * @return {Promise}
 	 * @author Deng Nianchen
 	 * @see request
@@ -145,7 +145,7 @@ class Http {
 	 * @param {String}  name        提供给服务器的文件名
 	 * @param {Object?} data        随请求提交的数据
 	 * @param {Object?} options     请求选项，见request函数
-	 * @param {Class?}  returnType  返回数据的类型，若未指定则返回原始数据
+	 * @param {Class|Class[]?}  returnType  返回数据的类型，若未指定则返回原始数据
 	 * @returns {Promise}
 	 * @see request
 	 * @see submit
@@ -164,11 +164,46 @@ class Http {
 				login: true,
 				filePath: file,
 				name: name,
-				formData: data,
+				formData: Http._handleRequestData(data),
 				success: result => resolve(Http._handleResult(result, returnType)),
 				fail: ex => reject($.Err.fromResponseError(ex))
 			}));
 		});
+	}
+	
+	/**
+	 * 对请求数据进行预处理，将其中包含的模型对象转换为一般数据对象。
+	 *
+	 * @param {object} data 请求数据
+	 * @return {object} 处理后的请求数据
+	 * @private
+	 * @see $.Model.toPlainObject
+	 * @author Deng Nianchen
+	 */
+	static _handleRequestData(data) {
+		if (data === null)
+			return data;
+		let processedData = {};
+		$(data).each((key, value) =>
+			processedData[key] = Http._handleRequestDataElement(value));
+		return processedData;
+	}
+	
+	/**
+	 * 对请求数据中的元素进行预处理，判断是否为模型对象或其数组，并将其转为一般数据对象（数组）。
+	 *
+	 * @param {$.Model|$.Model[]|*} data    请求数据中的元素
+	 * @return {object|object[]|*}  处理后的数据
+	 * @see $.Model.toPlainObject
+	 * @private
+	 * @author Deng Nianchen
+	 */
+	static _handleRequestDataElement(data) {
+		if (data instanceof $.Model)
+			return data.toPlainObject();
+		if (data instanceof Array)
+			return data.map(value => Http._handleRequestDataElement(value));
+		return data;
 	}
 	
 	/**
