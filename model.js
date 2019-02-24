@@ -13,7 +13,7 @@ class Model {
 	 * @author Deng Nianchen
 	 */
 	constructor(data = null) {
-		if (!data)
+		if (data)
 			$(this).extend(data);
 	}
 	
