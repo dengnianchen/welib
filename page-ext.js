@@ -131,8 +131,11 @@ let pageLoadingFunction = function() {};
 				// 设置全局配置
 				this.setData({ '$': $.App.all });
 				// 调用onLoad函数（若存在）进行页面加载
-				if (pageOnLoad instanceof Function)
-					await pageOnLoad.call(this, options);
+				if (pageOnLoad instanceof Function) {
+					let r = await pageOnLoad.call(this, options);
+					if (r === false)
+						return;
+				}
 				this.onLoadExecuting = false;
 				// 页面加载完成后，调用onShow函数执行页面显示相关逻辑
 				// 如果onShow函数已经被原生代码调用（此时会被跳过执行），则再次调用onShow
