@@ -172,7 +172,7 @@ class Http {
 	}
 	
 	/**
-	 * 对请求数据进行预处理，将其中包含的模型对象转换为一般数据对象。
+	 * 对请求数据进行预处理，将其中包含的模型对象转换为一般数据对象，然后进行JSON序列化。
 	 *
 	 * @param {object} data 请求数据
 	 * @return {object} 处理后的请求数据
@@ -184,8 +184,12 @@ class Http {
 		if (data === null)
 			return data;
 		let processedData = {};
-		$(data).each((key, value) =>
-			processedData[key] = Http._handleRequestDataElement(value));
+		$(data).each((key, value) => {
+			value = Http._handleRequestDataElement(value);
+			if (value instanceof Object)
+				value = JSON.stringify(value);
+			processedData[key] = value;
+		});
 		return processedData;
 	}
 	
