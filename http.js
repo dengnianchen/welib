@@ -239,8 +239,7 @@ class Http {
 						value instanceof Array ? value.map(value1 => new type[index](value1)) :
 							new type[index](value);
 				});
-		}
-		if (returnData instanceof Array) {
+		} else if (returnData instanceof Array) {
 			returnData = returnData.map(
 				(value) => value === null ? null : new type(value));
 		} else
