@@ -127,7 +127,11 @@ let pageLoadingFunction = function() {};
 			try {
 				this.setLoading(!isPulldownRefresh && true);
 				this.loadOptions = options;
-				await pageLoadingFunction.call(this);
+				
+				let r = await pageLoadingFunction.call(this);
+				if (r === false)
+					return;
+				
 				// 设置全局配置
 				this.setData({ '$': $.App.all });
 				// 调用onLoad函数（若存在）进行页面加载
