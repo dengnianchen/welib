@@ -312,7 +312,7 @@ let pageLoadingFunction = function() {};
 			}
 			
 			// 处理DialogPage的返回值
-			if (this.dialogPageResolve !== null) {
+			if (this.dialogPageResolve) {
 				let dialogPageResolve = this.dialogPageResolve;
 				this.dialogPageResolve = null;
 				dialogPageResolve(Page.pullData('dialogResult'));
