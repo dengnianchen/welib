@@ -71,6 +71,25 @@ let pageUtils = {
 	reloadPage() {
 		console.log ("Reload page");
 		this.onLoad(this.loadOptions);
+	},
+	
+	async navigateToDialogPage(url) {
+		let _this = this;
+		return new Promise((resolve, reject) => {
+			_this.dialogPageResolve = resolve;
+			wx.navigateTo({
+				url,
+				fail(res) {
+					_this.dialogPageResolve = null;
+					reject($.Err.FAIL(res));
+				}
+			});
+		});
+	},
+	
+	navigateReturn(data) {
+		Page.pushData('dialogResult', data);
+		wx.navigateBack();
 	}
 	
 };
@@ -92,6 +111,20 @@ let pageStaticFunctions = {
 	current() {
 		let pages = getCurrentPages();
 		return pages[pages.length - 1];
+	},
+	
+	pullData(key) {
+		if (!Page.dataAcross)
+			return null;
+		let result = Page.dataAcross[key];
+		delete Page.dataAcross[key];
+		return result;
+	},
+	
+	pushData(key, value) {
+		if (!Page.dataAcross)
+			Page.dataAcross = {};
+		Page.dataAcross[key] = value;
 	}
 	
 };
@@ -164,6 +197,7 @@ let pageLoadingFunction = function() {};
 			if (this.onLoadExecuting)
 				return;
 			this.setLoading(true);
+			
 			try {
 				// 调用onShow函数（若存在）进行页面加载
 				if (pageOnShow instanceof Function)
@@ -175,6 +209,14 @@ let pageLoadingFunction = function() {};
 					throw ex;
 				this.setLoading(false, ex);
 			}
+			
+			// 处理DialogPage的返回值
+			if (this.dialogPageResolve !== null) {
+				let dialogPageResolve = this.dialogPageResolve;
+				this.dialogPageResolve = null;
+				dialogPageResolve(Page.pullData('dialogResult'));
+			}
+			
 		};
 		
 		// 若页面没有实现onPullDownRefresh函数，则为其实现默认逻辑为刷新整个页面的内容
