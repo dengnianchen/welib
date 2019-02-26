@@ -11,6 +11,7 @@ $.Err = require('./err');
 $.Wui = require('./wui');
 $.String = require('./string');
 $.Model = require('./model');
+$.Url = require('./url');
 
 /**
  * 初始化Welib库，目前支持的配置如下（问号表示可选字段）：

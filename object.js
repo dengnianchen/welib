@@ -9,12 +9,6 @@ function weobj (o) {
 			return isEmpty;
 		},
 		
-		urlParams() {
-			const params = [];
-			this.each((key, value) => params.push(`${key}=${value}`), true);
-			return params.join("&");
-		},
-		
 		getValue(path) {
 			let keys = path.split(".");
 			let obj = o;

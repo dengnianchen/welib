@@ -189,7 +189,7 @@ class Http {
 			if (value instanceof Object)
 				value = JSON.stringify(value);
 			processedData[key] = value;
-		});
+		}, true);
 		return processedData;
 	}
 	
