@@ -55,6 +55,22 @@ class Err extends Error {
 		this.brief = brief;
 	}
 	
+	/**
+	 * 判断错误类型是否与指定错误类型相同。
+	 *
+	 * 指定错误类型参数可以是字符串或$.Err.XXX型变量。
+	 *
+	 * @param {string|function} errType 指定错误类型
+	 * @return {boolean}
+	 * @author Deng Nianchen
+	 */
+	is(errType) {
+		if (typeof (errType) === 'function')
+			return this.type === errType().type;
+		else
+			return this.type === errType;
+	}
+	
 }
 
 // 内置错误类型
