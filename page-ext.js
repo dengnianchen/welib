@@ -291,13 +291,13 @@ let pageLoadingFunction = function() {};
 		// 包装onShow函数，若当前页面正在加载（onLoad正在执行）则onShow函数将在页面
 		// 加载完成后调用
 		const pageOnShow = page.onShow;
-		page.onShow = async function(callByOnLoad = false) {
+		page.onShow = async function(callByOnLoad = false, isPulldownRefresh = false) {
 			if (!callByOnLoad)
 				this.onShowCalledByNative = true;
 			// 页面还在执行onLoad部分的逻辑，暂时跳过onShow执行
 			if (this.onLoadExecuting)
 				return;
-			this.setLoading(true);
+			this.setLoading(!isPulldownRefresh);
 			
 			try {
 				// 调用onShow函数（若存在）进行页面加载
