@@ -32,6 +32,19 @@ class Model {
 		return plainObject;
 	}
 	
+	/**
+	 * 辅助函数，根据参数类型判断返回参数的id字段或参数本身
+	 *
+	 * @param {Array|Object|string|number} objOrId 含有id字段的对象/对象数组/id字段
+	 * @return {string|number|string[]|number[]}
+	 */
+	static id(objOrId) {
+		if (objOrId instanceof Array)
+			return objOrId.map(value => Model.id(value));
+		if (objOrId instanceof Object)
+			return objOrId.id;
+		return objOrId;
+	}
 }
 
 module.exports = Model;
