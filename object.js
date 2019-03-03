@@ -72,12 +72,13 @@ function weobj (o) {
 				return;
 			let result = o instanceof Array ? [] : {};
 			this.each((key, value) => result[key] = callback(key, value));
+			return result;
 		},
 		
 		toPlainObject() {
 			if (!(o instanceof Object))
 				return o;
-			if (o.toPlainObject())
+			if (o.toPlainObject)
 				return o.toPlainObject();
 			return this.map((key, value) => weobj(value).toPlainObject());
 		},
@@ -85,13 +86,12 @@ function weobj (o) {
 		fromPlainObject(typeDesc) {
 			if (!(o instanceof Object) || !typeDesc)
 				return o;
-			if (typeDesc instanceof Function) {
-				if (o instanceof Array)
-					return this.map((key, value) => new typeDesc(value));
-				else
-					return new typeDesc(o);
-			}
-			return this.map((key, value) => weobj(value).fromPlainObject(typeDesc[key]));
+			if (o instanceof Array)
+				return this.map((key, value) => weobj(value).fromPlainObject(typeDesc));
+			if (typeDesc instanceof Function)
+				return new typeDesc(o);
+			return this.map((key, value) => weobj(value).fromPlainObject(
+				typeDesc[key] ? typeDesc[key] : typeDesc['*']));
 		}
 		
 	};
