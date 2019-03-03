@@ -49,6 +49,13 @@ function weobj (o) {
 		},
 		
 		each(callback, excludeFunction) {
+			if (!(o instanceof Object))
+				return;
+			if (o instanceof Array) {
+				for (let i = 0; i < o.length; ++i)
+					if (callback(i, o[i]) === false)
+						break;
+			}
 			for (let key in o) {
 				if (!o.hasOwnProperty(key))
 					continue;
@@ -58,6 +65,33 @@ function weobj (o) {
 					break;
 			}
 			return this;
+		},
+		
+		map(callback) {
+			if (!(o instanceof Object))
+				return;
+			let result = o instanceof Array ? [] : {};
+			this.each((key, value) => result[key] = callback(key, value));
+		},
+		
+		toPlainObject() {
+			if (!(o instanceof Object))
+				return o;
+			if (o.toPlainObject())
+				return o.toPlainObject();
+			return this.map((key, value) => weobj(value).toPlainObject());
+		},
+		
+		fromPlainObject(typeDesc) {
+			if (!(o instanceof Object) || !typeDesc)
+				return o;
+			if (typeDesc instanceof Function) {
+				if (o instanceof Array)
+					return this.map((key, value) => new typeDesc(value));
+				else
+					return new typeDesc(o);
+			}
+			return this.map((key, value) => weobj(value).fromPlainObject(typeDesc[key]));
 		}
 		
 	};
