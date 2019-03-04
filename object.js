@@ -58,6 +58,7 @@ function weobj (o) {
 				for (let i = 0; i < o.length; ++i)
 					if (callback(i, o[i]) === false)
 						break;
+				return;
 			}
 			for (let key in o) {
 				if (!o.hasOwnProperty(key))
