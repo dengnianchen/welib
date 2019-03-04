@@ -26,10 +26,7 @@ class Model {
 	toPlainObject() {
 		let plainObject = {};
 		$(this).each((key, value) => {
-			if (!(value instanceof Model))
-				plainObject[key] = value;
-			else
-				plainObject[key] = value.toPlainObject();
+			plainObject[key] = $(value).toPlainObject();
 		});
 		return plainObject;
 	}
@@ -43,8 +40,9 @@ class Model {
 	toTransferObject() {
 		let plainObject = {};
 		$(this).each((key, value) => {
-			if (!(value instanceof Model))
-				plainObject[key] = value;
+			plainObject[key] = $(value).toPlainObject();
+			if (plainObject[key] === undefined)
+				delete plainObject[key];
 		});
 		return plainObject;
 	}

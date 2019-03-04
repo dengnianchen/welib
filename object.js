@@ -74,7 +74,11 @@ function weobj (o) {
 			if (!(o instanceof Object))
 				return;
 			let result = o instanceof Array ? [] : {};
-			this.each((key, value) => result[key] = callback(key, value));
+			this.each((key, value) => {
+				result[key] = callback(key, value);
+				if (result[key] === undefined)
+					delete result[key];
+			});
 			return result;
 		},
 		
@@ -84,6 +88,14 @@ function weobj (o) {
 			if (o.toPlainObject)
 				return o.toPlainObject();
 			return this.map((key, value) => weobj(value).toPlainObject());
+		},
+		
+		toTransferObject() {
+			if (!(o instanceof Object))
+				return o;
+			if (o.toTransferObject)
+				return undefined;
+			return this.map((key, value) => weobj(value).toTransferObject());
 		},
 		
 		toRichObject(typeDesc, key = null) {
