@@ -39,7 +39,10 @@ function weobj (o) {
 						this.extend(item);
 				} else if (source instanceof Object)
 					weobj(source).each((key, value) => {
-						if (o[key] instanceof Object && value instanceof Object)
+						if (o[key] instanceof Object &&
+							value instanceof Object &&
+							!(o[key] instanceof Array) &&
+							!(value instanceof Array))
 							weobj(o[key]).extend(value);
 						else
 							o[key] = value;
@@ -84,7 +87,7 @@ function weobj (o) {
 		},
 		
 		toRichObject(typeDesc, key = null) {
-			if (!(o instanceof Object) || !typeDesc)
+			if (!(typeDesc instanceof Object))
 				return o;
 			if (o instanceof Array)
 				return this.map((key, value) => weobj(value).toRichObject(typeDesc, key));

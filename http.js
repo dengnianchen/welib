@@ -177,7 +177,7 @@ class Http {
 	 * @param {object} data 请求数据
 	 * @return {object} 处理后的请求数据
 	 * @private
-	 * @see $.Model.toPlainObject
+	 * @see $.Model.toTransferObject
 	 * @author Deng Nianchen
 	 */
 	static _handleRequestData(data) {
@@ -198,13 +198,13 @@ class Http {
 	 *
 	 * @param {$.Model|$.Model[]|*} data    请求数据中的元素
 	 * @return {object|object[]|*}  处理后的数据
-	 * @see $.Model.toPlainObject
+	 * @see $.Model.toTransferObject
 	 * @private
 	 * @author Deng Nianchen
 	 */
 	static _handleRequestDataElement(data) {
 		if (data instanceof $.Model)
-			return data.toPlainObject();
+			return data.toTransferObject();
 		if (data instanceof Array)
 			return data.map(value => Http._handleRequestDataElement(value));
 		return data;

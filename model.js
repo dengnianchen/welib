@@ -18,12 +18,29 @@ class Model {
 	}
 	
 	/**
-	 * 将模型对象转换为可传递给服务器的一般数据对象
+	 * 将模型对象转换为可存储的一般数据对象
 	 *
 	 * @return {object}
 	 * @author Deng Nianchen
 	 */
 	toPlainObject() {
+		let plainObject = {};
+		$(this).each((key, value) => {
+			if (!(value instanceof Model))
+				plainObject[key] = value;
+			else
+				plainObject[key] = value.toPlainObject();
+		});
+		return plainObject;
+	}
+	
+	/**
+	 * 将模型对象转换为可传递给服务器的一般数据对象（默认忽略Model字段）
+	 *
+	 * @return {object}
+	 * @author Deng Nianchen
+	 */
+	toTransferObject() {
 		let plainObject = {};
 		$(this).each((key, value) => {
 			if (!(value instanceof Model))
