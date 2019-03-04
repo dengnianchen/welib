@@ -83,14 +83,14 @@ function weobj (o) {
 			return this.map((key, value) => weobj(value).toPlainObject());
 		},
 		
-		fromPlainObject(typeDesc) {
+		toRichObject(typeDesc) {
 			if (!(o instanceof Object) || !typeDesc)
 				return o;
 			if (o instanceof Array)
-				return this.map((key, value) => weobj(value).fromPlainObject(typeDesc));
+				return this.map((key, value) => weobj(value).toRichObject(typeDesc));
 			if (typeDesc instanceof Function)
 				return new typeDesc(o);
-			return this.map((key, value) => weobj(value).fromPlainObject(
+			return this.map((key, value) => weobj(value).toRichObject(
 				typeDesc[key] ? typeDesc[key] : typeDesc['*']));
 		}
 		

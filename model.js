@@ -9,12 +9,12 @@ class Model {
 	/**
 	 * 从服务器返回的一般数据对象转换为模型对象
 	 *
-	 * @param {object}  data    一般数据对象
+	 * @param {object}  data        一般数据对象
+	 * @param {object}  typeDesc    类型结构描述
 	 * @author Deng Nianchen
 	 */
-	constructor(data = null) {
-		if (data)
-			$(this).extend(data);
+	constructor(data = null, typeDesc = {}) {
+		$(this).extend($(data).toRichObject(typeDesc));
 	}
 	
 	/**
