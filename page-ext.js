@@ -279,7 +279,7 @@ let pageLoadingFunction = function() {};
 				// 如果onShow函数已经被原生代码调用（此时会被跳过执行），则再次调用onShow
 				// 否则在onLoad函数执行完毕后onShow函数会被原生代码调用
 				if (this.onShowCalledByNative)
-					await this.onShow(true);
+					await this.onShow(true, isPulldownRefresh);
 			} catch (ex) {
 				this.onLoadExecuting = false;
 				if (isPulldownRefresh)
