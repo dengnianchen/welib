@@ -18,15 +18,18 @@ class Modal {
 	/**
 	 * 显示成功提示
 	 *
-	 * @param text {string} 提示内容
+	 * @param {string}  text        提示内容
+	 * @param {number}  duration    显示持续时长
+	 * @return Promise<void>
 	 * @author Deng Nianchen
 	 */
-	static async showSuccess(text) {
+	static async showSuccess(text, duration = 1500) {
 		return new Promise ((resolve, reject) => {
 			wx.showToast({
 				title: text,
 				icon: 'success',
-				success: resolve,
+				duration: duration,
+				success: () => setTimeout(resolve, duration),
 				fail: reject
 			});
 		});
