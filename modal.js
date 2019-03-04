@@ -21,10 +21,14 @@ class Modal {
 	 * @param text {string} 提示内容
 	 * @author Deng Nianchen
 	 */
-	static showSuccess(text) {
-		wx.showToast({
-			title: text,
-			icon: 'success'
+	static async showSuccess(text) {
+		return new Promise ((resolve, reject) => {
+			wx.showToast({
+				title: text,
+				icon: 'success',
+				success: resolve,
+				fail: reject
+			});
 		});
 	}
 
@@ -46,7 +50,7 @@ class Modal {
 	 * @returns {Promise}
 	 * @author Deng Nianchen
 	 */
-	static show(title, content, options = {}) {
+	static async show(title, content, options = {}) {
 		wx.hideToast();
 		return new Promise((resolve, reject) => {
 			wx.showModal($.extend(options, {
@@ -56,8 +60,8 @@ class Modal {
 					(content.constructor === String ?
 						content :
 						JSON.stringify(content)),
-				success: res => resolve(res),
-				fail: () => reject()
+				success: resolve,
+				fail: reject
 			}));
 		});
 	};
