@@ -83,15 +83,29 @@ function weobj (o) {
 			return this.map((key, value) => weobj(value).toPlainObject());
 		},
 		
-		toRichObject(typeDesc) {
+		toRichObject(typeDesc, key = null) {
 			if (!(o instanceof Object) || !typeDesc)
 				return o;
 			if (o instanceof Array)
-				return this.map((key, value) => weobj(value).toRichObject(typeDesc));
+				return this.map((key, value) => weobj(value).toRichObject(typeDesc, key));
 			if (typeDesc instanceof Function)
-				return new typeDesc(o);
-			return this.map((key, value) => weobj(value).toRichObject(
-				typeDesc[key] ? typeDesc[key] : typeDesc['*']));
+				return new typeDesc(o, key);
+			let keyFound = {};
+			let obj = this.map((key, value) => {
+				let desc = typeDesc[key] ? typeDesc[key] : typeDesc['*'];
+				let obj = weobj(value).toRichObject(desc instanceof Array ? desc[0] : desc, key);
+				keyFound[key] = true;
+				return obj;
+			});
+			$(typeDesc).each((key, desc) => {
+				if (key === '*' || keyFound[key])
+					return;
+				if (!(desc instanceof Object))
+					obj[key] = desc;
+				else if (desc instanceof Array)
+					obj[key] = desc[1];
+			});
+			return obj;
 		}
 		
 	};
