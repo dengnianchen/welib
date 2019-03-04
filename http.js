@@ -188,7 +188,8 @@ class Http {
 			value = Http._handleRequestDataElement(value);
 			if (value instanceof Object)
 				value = JSON.stringify(value);
-			processedData[key] = value;
+			if (data !== undefined)
+				processedData[key] = value;
 		}, true);
 		return processedData;
 	}
