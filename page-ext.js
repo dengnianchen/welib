@@ -268,7 +268,7 @@ let pageLoadingFunction = function() {};
 					return;
 				
 				// 设置全局配置
-				this.setData({ '$': $.App.all });
+				this.setData({ '$': $.AppData });
 				// 调用onLoad函数（若存在）进行页面加载
 				if (pageOnLoad instanceof Function) {
 					let r = await pageOnLoad.call(this, this.loadOptions);
