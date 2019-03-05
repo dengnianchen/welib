@@ -31,7 +31,7 @@ $.initial = function(config = null) {
 		}
 	}
 	$($).each((key, value) => {
-		if (typeof value._initial === "function")
+		if (value && typeof value._initial === "function")
 			value._initial(config);
 	});
 };
