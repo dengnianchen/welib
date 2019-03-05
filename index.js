@@ -19,10 +19,13 @@ $.Url = require('./url');
  *
  * 若未指定参数，则默认读取App.globalData.config.welib作为配置对象
  *
- * @param {Object?} config 配置信息
+ * @param {App}     app     应用程序对象
+ * @param {Object?} config  配置信息
  * @author Deng Nianchen
  */
-$.initial = function(config = null) {
+$.initial = function(app, config = null) {
+	$.App = app;
+	$.AppData = app.globalData = app.globalData || {};
 	if (!config) {
 		try {
 			config = $.AppData.config.welib || {};
