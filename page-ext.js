@@ -122,7 +122,7 @@ let pageStaticFunctions = {
 	 * @see wx.reLanuch
 	 * @author Deng Nianchen
 	 */
-	async reLanuch(option) {
+	async reLanuch(option = {}) {
 		if (option.data) {
 			if (option.url.indexOf('?') >= 0)
 				option.url += '&' + $.Url.toParamString(option.data);
@@ -147,7 +147,7 @@ let pageStaticFunctions = {
 	 * @see wx.redirectTo
 	 * @author Deng Nianchen
 	 */
-	async redirectTo(option) {
+	async redirectTo(option = {}) {
 		if (option.data) {
 			if (option.url.indexOf('?') >= 0)
 				option.url += '&' + $.Url.toParamString(option.data);
@@ -172,7 +172,7 @@ let pageStaticFunctions = {
 	 * @see wx.navigateTo
 	 * @author Deng Nianchen
 	 */
-	async navigateTo(option) {
+	async navigateTo(option = {}) {
 		if (option.data) {
 			if (option.url.indexOf('?') >= 0)
 				option.url += '&' + $.Url.toParamString(option.data);
@@ -198,8 +198,9 @@ let pageStaticFunctions = {
 	 * @return {Promise<*>}
 	 * @author Deng Nianchen
 	 */
-	async navigateToDialogPage(option) {
+	async navigateToDialog(option = {}) {
 		let _this = Page.current();
+		$(option).extend({ data: { dialog: true } });
 		return new Promise((resolve, reject) => {
 			_this.dialogPageResolve = resolve;
 			Page.navigateTo(option).catch(res => {
@@ -217,7 +218,7 @@ let pageStaticFunctions = {
 	 * @see navigateToDialogPage
 	 * @author Deng Nianchen
 	 */
-	async navigateReturn(option) {
+	async navigateReturn(option = {}) {
 		Page.pushData('dialogResult', option.data);
 		return new Promise (((resolve, reject) => {
 			wx.navigateBack({
