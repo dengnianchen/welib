@@ -231,15 +231,6 @@ let pageStaticFunctions = {
 };
 
 
-
-/**
- * 页面初始化定制函数
- *
- * @type {Function}
- * @author DengNianchen
- */
-let pageLoadingFunction = function() {};
-
 /**
  * 包装微信小程序默认的Page函数，可以在小程序对页面初始化前进行一些额外的公共操作
  *
@@ -263,9 +254,11 @@ let pageLoadingFunction = function() {};
 				if (options !== true)
 					this.loadOptions = $.Url.fromParams(options);
 				
-				let r = await pageLoadingFunction.call(this);
-				if (r === false)
-					return;
+				if ($.App.beforePageLoad instanceof Function) {
+					let r = await $.App.beforePageLoad(this);
+					if (r === false)
+						return;
+				}
 				
 				// 设置全局配置
 				this.setData({ '$': $.AppData });
@@ -346,27 +339,3 @@ let pageLoadingFunction = function() {};
 	$(Page).extend(pageStaticFunctions);
 	
 })();
-
-/**
- *
- */
-class PageExt {
-	
-	/**
-	 * 模块初始化函数
-	 * 设置页面初始化定制函数
-	 * 支持的配置字段如下：
-	 * pageBeforeLoad: 可选，页面初始化定制函数
-	 *
-	 * @param {Object} config 配置信息
-	 * @protected
-	 * @author Deng Nianchen
-	 */
-	static _initial(config) {
-		if (config.pageBeforeLoad)
-			pageLoadingFunction = config.pageBeforeLoad;
-	}
-	
-}
-
-module.exports = PageExt;
