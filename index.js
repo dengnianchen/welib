@@ -17,10 +17,19 @@ $.Url = require('./url');
  * host?            指定用于所有请求的主机地址
  * wui?             Wui组件配置，参见各Wui组件说明文档
  *
+ * 若未指定参数，则默认读取App.globalData.config.welib作为配置对象
+ *
  * @param {Object?} config 配置信息
  * @author Deng Nianchen
  */
-$.initial = function(config = {}) {
+$.initial = function(config = null) {
+	if (!config) {
+		try {
+			config = $.AppData.config.welib || {};
+		} catch (ex) {
+			config = {};
+		}
+	}
 	$($).each((key, value) => {
 		if (typeof value._initial === "function")
 			value._initial(config);
