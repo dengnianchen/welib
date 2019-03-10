@@ -298,6 +298,14 @@ let pageStaticFunctions = {
 			// 页面还在执行onLoad部分的逻辑，暂时跳过onShow执行
 			if (this.onLoadExecuting)
 				return;
+
+			// 处理DialogPage的返回值（从Dialog页面返回时不执行具体的onShow操作）
+			if (this.dialogPageResolve) {
+				let dialogPageResolve = this.dialogPageResolve;
+				this.dialogPageResolve = null;
+				dialogPageResolve(Page.pullData('dialogResult'));
+				return;
+			}
 			this.setLoading(!isPulldownRefresh);
 			
 			try {
@@ -312,12 +320,7 @@ let pageStaticFunctions = {
 				this.setLoading(false, ex);
 			}
 			
-			// 处理DialogPage的返回值
-			if (this.dialogPageResolve) {
-				let dialogPageResolve = this.dialogPageResolve;
-				this.dialogPageResolve = null;
-				dialogPageResolve(Page.pullData('dialogResult'));
-			}
+			
 			
 		};
 		
