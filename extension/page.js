@@ -129,6 +129,8 @@ let pageStaticFunctions = {
 			else
 				option.url += '?' + $.Url.toParamString(option.data);
 		}
+		if (option.richData)
+			Page.pushData('richData', option.richData);
 		return new Promise (((resolve, reject) => {
 			wx.reLanuch($.extend(option, {
 				success: resolve,
@@ -154,6 +156,8 @@ let pageStaticFunctions = {
 			else
 				option.url += '?' + $.Url.toParamString(option.data);
 		}
+		if (option.richData)
+			Page.pushData('richData', option.richData);
 		return new Promise (((resolve, reject) => {
 			wx.redirectTo($.extend(option, {
 				success: resolve,
@@ -179,6 +183,8 @@ let pageStaticFunctions = {
 			else
 				option.url += '?' + $.Url.toParamString(option.data);
 		}
+		if (option.richData)
+			Page.pushData('richData', option.richData);
 		return new Promise (((resolve, reject) => {
 			wx.navigateTo($.extend(option, {
 				success: resolve,
@@ -252,7 +258,8 @@ let pageStaticFunctions = {
 			try {
 				this.setLoading(!isPulldownRefresh && true);
 				if (options !== true)
-					this.loadOptions = $.Url.fromParams(options);
+					this.loadOptions = $.extend(Page.pullData('richData'),
+						$.Url.fromParams(options));
 				
 				if ($.App.beforePageLoad instanceof Function) {
 					let r = await $.App.beforePageLoad(this);
@@ -322,7 +329,7 @@ let pageStaticFunctions = {
 					return;
 				}
 				try {
-					await this.onLoad(this.loadOptions, true);
+					await this.onLoad(true, true);
 				} catch (ex) {
 					$.Modal.showError('页面刷新失败', ex);
 				} finally {
