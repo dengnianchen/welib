@@ -1,3 +1,43 @@
+async function pageOnLoad() {
+	
+	// 1. 执行公共页面加载前操作
+	if ($.App.beforePageLoad instanceof Function) {
+		let r = await $.App.beforePageLoad(this);
+		if (r === false)
+			return false;
+	}
+	
+	// 2. 设置全局配置
+	this.setData({ '$': $.AppData });
+	
+	// 3. 调用用户定义的onLoad函数（若存在）进行页面加载
+	if (this._onLoad instanceof Function) {
+		let r = await this._onLoad(this.loadOptions);
+		if (r === false)
+			return false;
+	}
+	
+}
+
+async function pageOnShow() {
+	
+	// 1. 处理DialogPage的返回值（从Dialog页面返回时不执行具体的onShow操作）
+	if (this.dialogPageResolve) {
+		let dialogPageResolve = this.dialogPageResolve;
+		this.dialogPageResolve = null;
+		dialogPageResolve(Page.pullData('dialogResult'));
+		return false;
+	}
+	
+	// 2. 调用用户定义的onShow函数（若存在）进行页面加载
+	if (this._onShow instanceof Function) {
+		let r = await this._onShow();
+		if (r === false)
+			return false;
+	}
+	
+}
+
 /**
  * 包含原生Page对象的扩展工具函数
  *
@@ -13,8 +53,8 @@ let pageUtils = {
 	 */
 	getPath() {
 		let path = "/" + this.route;
-		if (!$(this.loadOptions).isEmpty())
-			path += '?' + $.Url.toParamString(this.loadOptions);
+		if (!$(this.rawOptions).isEmpty())
+			path += '?' + $.Url.toParamString(this.rawOptions);
 		return path;
 	},
 	
@@ -55,10 +95,43 @@ let pageUtils = {
 	 *
 	 * @author Deng Nianchen
 	 */
-	reloadPage() {
-		console.log ("Reload page");
-		this.onLoad(true);
+	async reloadPage(isPulldownRefresh = false) {
+		let _this = this;
+		if (App.chainRuning)
+			return;
+		try {
+			if (!isPulldownRefresh)
+				this.setLoading(true);
+			this.callChain.push(async () => await pageOnLoad(_this));
+			this.callChain.push(async () => await pageOnShow(_this));
+			await this.runChain();
+			if (!isPulldownRefresh)
+				this.setLoading(false);
+		} catch (ex) {
+			if (!isPulldownRefresh)
+				this.setLoading(false, ex);
+			else
+				throw ex;
+		}
 	},
+	
+	async runChain() {
+		await $.App.waitForInitialize();
+		let callChain = this.callChain;
+		this.callChain = [];
+		this.chainRuning = true;
+		try {
+			for (let func of callChain) {
+				let r = await func();
+				if (r === false)
+					break;
+			}
+		} catch (ex) {
+			throw ex;
+		} finally {
+			this.chainRuning = false;
+		}
+	}
 	
 };
 
@@ -122,7 +195,7 @@ let pageStaticFunctions = {
 	 * @see wx.reLanuch
 	 * @author Deng Nianchen
 	 */
-	async reLanuch(option = {}) {
+	async reLaunch(option = {}) {
 		if (option.data) {
 			if (option.url.indexOf('?') >= 0)
 				option.url += '&' + $.Url.toParamString(option.data);
@@ -132,7 +205,7 @@ let pageStaticFunctions = {
 		if (option.richData)
 			Page.pushData('richData', option.richData);
 		return new Promise (((resolve, reject) => {
-			wx.reLanuch($.extend(option, {
+			wx.reLaunch($.extend(option, {
 				success: resolve,
 				fail: reject
 			}));
@@ -236,7 +309,6 @@ let pageStaticFunctions = {
 	
 };
 
-
 /**
  * 包装微信小程序默认的Page函数，可以在小程序对页面初始化前进行一些额外的公共操作
  *
@@ -246,98 +318,49 @@ let pageStaticFunctions = {
 	
 	const originPageFunction = Page;
 	Page = function(page) {
+		page.callChain = [];
 		// 添加页面数据loading=true，用于显示“加载中”提示画面
 		page.data = $.extend(page.data, { loading: true });
 		// 插入工具函数
 		$(page).extend(pageUtils);
 		
 		// 包装onLoad函数，进行加载时的通用操作
-		const pageOnLoad = page.onLoad;
-		page.onLoad = async function(options, isPulldownRefresh = false) {
-			this.onLoadExecuting = true;
-			try {
-				this.setLoading(!isPulldownRefresh && true);
-				if (options !== true)
-					this.loadOptions = $.extend(Page.pullData('richData'),
-						$.Url.fromParams(options));
-				
-				if ($.App.beforePageLoad instanceof Function) {
-					let r = await $.App.beforePageLoad(this);
-					if (r === false)
-						return;
-				}
-				
-				// 设置全局配置
-				this.setData({ '$': $.AppData });
-				// 调用onLoad函数（若存在）进行页面加载
-				if (pageOnLoad instanceof Function) {
-					let r = await pageOnLoad.call(this, this.loadOptions);
-					if (r === false)
-						return;
-				}
-				this.onLoadExecuting = false;
-				// 页面加载完成后，调用onShow函数执行页面显示相关逻辑
-				// 如果onShow函数已经被原生代码调用（此时会被跳过执行），则再次调用onShow
-				// 否则在onLoad函数执行完毕后onShow函数会被原生代码调用
-				if (this.onShowCalledByNative)
-					await this.onShow(true, isPulldownRefresh);
-			} catch (ex) {
-				this.onLoadExecuting = false;
-				if (isPulldownRefresh)
-					throw ex;
-				this.setLoading(false, ex);
-			}
+		page._onLoad = page.onLoad;
+		page.onLoad = function(options) {
+			let _this = this;
+			_this.rawOptions = options;
+			_this.loadOptions = $.extend(Page.pullData('richData'), $.Url.fromParams(options));
+			_this.callChain.push(async () => pageOnLoad.call(_this));
 		};
 		
 		// 包装onShow函数，若当前页面正在加载（onLoad正在执行）则onShow函数将在页面
 		// 加载完成后调用
-		const pageOnShow = page.onShow;
-		page.onShow = async function(callByOnLoad = false, isPulldownRefresh = false) {
-			if (!callByOnLoad)
-				this.onShowCalledByNative = true;
-			// 页面还在执行onLoad部分的逻辑，暂时跳过onShow执行
-			if (this.onLoadExecuting)
-				return;
-
-			// 处理DialogPage的返回值（从Dialog页面返回时不执行具体的onShow操作）
-			if (this.dialogPageResolve) {
-				let dialogPageResolve = this.dialogPageResolve;
-				this.dialogPageResolve = null;
-				dialogPageResolve(Page.pullData('dialogResult'));
-				return;
-			}
-			this.setLoading(!isPulldownRefresh);
-			
+		page._onShow = page.onShow;
+		page.onShow = async function() {
+			let _this = this;
+			_this.setLoading(true);
+			_this.callChain.push(async () => pageOnShow.call(_this));
 			try {
-				// 调用onShow函数（若存在）进行页面加载
-				if (pageOnShow instanceof Function)
-					await pageOnShow.call(this);
-				this.setLoading(false);
+				await _this.runChain();
+				_this.setLoading(false);
 			} catch (ex) {
-				// 如果被onLoad函数调用，则将异常抛给onLoad函数处理
-				if (callByOnLoad)
-					throw ex;
-				this.setLoading(false, ex);
+				_this.setLoading(false, ex);
 			}
-			
-			
-			
 		};
 		
 		// 若页面没有实现onPullDownRefresh函数，则为其实现默认逻辑为刷新整个页面的内容
 		if (!page.onPullDownRefresh) {
 			page.onPullDownRefresh = async function() {
-				if (this.isLoading() || this.data.loadingError) {
+				if (this.chainRuning || this.data.loadingError) {
 					wx.stopPullDownRefresh();
 					return;
 				}
 				try {
-					await this.onLoad(true, true);
+					await this.reloadPage(true);
 				} catch (ex) {
 					$.Modal.showError('页面刷新失败', ex);
-				} finally {
-					wx.stopPullDownRefresh();
 				}
+				wx.stopPullDownRefresh();
 			}
 		}
 		

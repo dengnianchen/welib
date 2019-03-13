@@ -2,4 +2,5 @@
 require('./promise');
 require('./date');
 require('./array');
+require('./app');
 require('./page');
