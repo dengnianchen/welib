@@ -122,7 +122,7 @@ let pageExt = {
 		loading: true,
 		loadingError: null
 	},
-
+	
 	/**
 	 * 获取页面的带参数路径，格式为path/of/page[?arg1=val1&arg2=val2...]
 	 *
@@ -194,7 +194,7 @@ let pageExt = {
 			return;
 		}
 		try {
-			await this.reloadPage(true);
+			await pageReload.call(this);
 		} catch (ex) {
 			$.Modal.showError('页面刷新失败', ex);
 		}
@@ -390,24 +390,23 @@ let pageStaticFunctions = {
 		// 包装onLoad函数，进行加载时的通用操作
 		page._onLoad = page.onLoad;
 		page.onLoad = function(options) {
-			let _this = this;
-			_this.rawOptions = options;
-			_this.loadOptions = $.extend(Page.pullData('richData'), $.Url.fromParams(options));
-			_this._callChain.push(async () => pageOnLoad.call(_this));
+			this.rawOptions = options;
+			this.loadOptions = $.extend(Page.pullData('richData'),
+				$.Url.fromParams(options));
+			this._callChain.push(pageOnLoad);
 		};
 		
 		// 包装onShow函数，若当前页面正在加载（onLoad正在执行）则onShow函数将在页面
 		// 加载完成后调用
 		page._onShow = page.onShow;
 		page.onShow = async function() {
-			let _this = this;
-			_this.setLoading(true);
-			_this._callChain.push(async () => pageOnShow.call(_this));
+			this.setLoading(true);
+			this._callChain.push(pageOnShow);
 			try {
-				await pageRunChain(_this);
-				_this.setLoading(false);
+				await pageRunChain.call(this);
+				this.setLoading(false);
 			} catch (ex) {
-				_this.setLoading(false, ex);
+				this.setLoading(false, ex);
 			}
 		};
 		
