@@ -119,7 +119,7 @@ let pageExt = {
 	 * 添加页面数据loadingError=null，用于显示加载错误画面
 	 */
 	data: {
-		loading: true,
+		loading: "加载中",
 		loadingError: null
 	},
 	
@@ -137,24 +137,22 @@ let pageExt = {
 	},
 	
 	/**
-	 * 设置页面全局加载标志位，用于决定页面是否显示“加载中”画面
-	 * 若isLoading=false，则可额外设置异常信息（用于页面加载失败时显示错误）
+	 * 设置页面全局加载标志位，用于决定页面是否显示“加载中”画面。
+	 * 若loading=false，则可额外设置异常信息（用于页面加载失败时显示错误）。
+	 * 若loading为字符串，则可设置加载画面显示的提示文字。
 	 *
-	 * @param {Boolean} isLoading
+	 * @param {Boolean|String} loading
 	 * @param {Object?} ex
 	 * @author Deng Nianchen
 	 */
-	setLoading(isLoading, ex) {
-		if (isLoading)
-			this.setData({ loading: true, loadingError: null });
-		else if (!isLoading && !ex)
-			this.setData({ loading: false, loadingError: null });
-		else {
-			console.log('加载失败', ex);
-			this.setData({
-				loading: false,
-				loadingError: ex
-			});
+	setLoading(loading, ex = null) {
+		if (loading === true)
+			this.setData({ loading: "加载中", loadingError: null });
+		else if (loading instanceof String)
+			this.setData({ loading, loadingError: null });
+		else if (!loading) {
+			ex && console.log('加载失败', ex);
+			this.setData({ loading: false, loadingError: ex });
 		}
 	},
 	
@@ -165,7 +163,7 @@ let pageExt = {
 	 * @author Deng Nianchen
 	 */
 	isLoading() {
-		return this.data.loading;
+		return this.data.loading !== false;
 	},
 	
 	/**
@@ -189,7 +187,7 @@ let pageExt = {
 	 * @returns {Promise<void>}
 	 */
 	async onPullDownRefresh() {
-		if (this._chainRuning || this.data.loadingError) {
+		if (this.isLoading() || this.data.loadingError) {
 			wx.stopPullDownRefresh();
 			return;
 		}
