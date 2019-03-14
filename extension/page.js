@@ -1,3 +1,16 @@
+/**
+ * 执行页面加载操作。
+ *
+ * 该函数会首先调用App中定义的beforePageLoad执行页面加载前的公共操作（例如检查权限等），
+ * 然后为页面设置App全局数据，最后调用页面原始的onLoad函数。
+ *
+ * 若App.beforePageLoad或Page.onLoad函数返回false，则该函数会返回false中断调用链中
+ * 后续函数的执行。
+ *
+ * @returns {Promise<boolean>}
+ * @private
+ * @author Deng Nianchen
+ */
 async function pageOnLoad() {
 	
 	// 1. 执行公共页面加载前操作
@@ -19,6 +32,18 @@ async function pageOnLoad() {
 	
 }
 
+/**
+ * 执行页面显示操作。
+ *
+ * 该函数首先检查是否从DialogPage返回，若是，则处理DialogPage的返回值并告知DialogPage
+ * 开启前的代码段继续执行，否则调用页面原始的onShow函数。
+ *
+ * 若Page.onLoad函数返回false，则该函数会返回false中断调用链中后续函数的执行。
+ *
+ * @returns {Promise<boolean>}
+ * @private
+ * @author Deng Nianchen
+ */
 async function pageOnShow() {
 	
 	// 1. 处理DialogPage的返回值（从Dialog页面返回时不执行具体的onShow操作）
@@ -39,12 +64,65 @@ async function pageOnShow() {
 }
 
 /**
+ * 顺序执行页面调用链。
+ *
+ * 页面的_callChain数组包含了需要顺序执行的函数。调用链支持异步函数。目前调用链主要用于
+ * 严格控制页面onLoad和onShow的执行顺序。
+ *
+ * @returns {Promise<void>}
+ * @private
+ * @author Deng Nianchen
+ */
+async function pageRunChain() {
+	await $.App.waitForInitialize();
+	try {
+		this._chainRuning = true;
+		for (let func of this._callChain)
+			if ((await func.call(this)) === false)
+				break;
+	} finally {
+		this._callChain = [];
+		this._chainRuning = false;
+	}
+}
+
+/**
+ * 重新载入当前页面。
+ *
+ * 该方法会重新调用页面的onLoad和onShow函数。
+ *
+ * @private
+ * @author Deng Nianchen
+ */
+async function pageReload() {
+	if (this._chainRuning)
+		return;
+	this._callChain.push(pageOnLoad);
+	this._callChain.push(pageOnShow);
+	await pageRunChain.call(this);
+}
+
+/**
  * 包含原生Page对象的扩展工具函数
  *
  * @author Deng Nianchen
  */
-let pageUtils = {
+let pageExt = {
 	
+	/**
+	 * 调用链数组
+	 */
+	_callChain: [],
+	
+	/**
+	 * 添加页面数据loading=true，用于显示“加载中”提示画面
+	 * 添加页面数据loadingError=null，用于显示加载错误画面
+	 */
+	data: {
+		loading: true,
+		loadingError: null
+	},
+
 	/**
 	 * 获取页面的带参数路径，格式为path/of/page[?arg1=val1&arg2=val2...]
 	 *
@@ -91,51 +169,39 @@ let pageUtils = {
 	},
 	
 	/**
-	 * 重新载入当前页面
+	 * 重新载入当前页面（效果等同于初次进入页面）。若加载失败则会显示错误界面。
 	 *
 	 * @author Deng Nianchen
 	 */
-	async reloadPage(isPulldownRefresh = false) {
-		let _this = this;
-		if (App.chainRuning)
-			return;
+	async reloadPage() {
 		try {
-			if (!isPulldownRefresh)
-				this.setLoading(true);
-			this.callChain.push(async () => await pageOnLoad(_this));
-			this.callChain.push(async () => await pageOnShow(_this));
-			await this.runChain();
-			if (!isPulldownRefresh)
-				this.setLoading(false);
+			this.setLoading(true);
+			await pageReload.call(this);
+			this.setLoading(false);
 		} catch (ex) {
-			if (!isPulldownRefresh)
-				this.setLoading(false, ex);
-			else
-				throw ex;
+			this.setLoading(false, ex);
 		}
 	},
 	
-	async runChain() {
-		await $.App.waitForInitialize();
-		let callChain = this.callChain;
-		this.callChain = [];
-		this.chainRuning = true;
-		try {
-			for (let func of callChain) {
-				let r = await func();
-				if (r === false)
-					break;
-			}
-		} catch (ex) {
-			throw ex;
-		} finally {
-			this.chainRuning = false;
+	/**
+	 * onPullDownRefresh的默认实现，下拉后重新加载页面（但不会显示loading画面）
+	 *
+	 * @returns {Promise<void>}
+	 */
+	async onPullDownRefresh() {
+		if (this._chainRuning || this.data.loadingError) {
+			wx.stopPullDownRefresh();
+			return;
 		}
+		try {
+			await this.reloadPage(true);
+		} catch (ex) {
+			$.Modal.showError('页面刷新失败', ex);
+		}
+		wx.stopPullDownRefresh();
 	}
 	
 };
-
-
 
 /**
  * 扩展Page静态函数，提供页面有关的全局工具函数
@@ -318,11 +384,8 @@ let pageStaticFunctions = {
 	
 	const originPageFunction = Page;
 	Page = function(page) {
-		page.callChain = [];
-		// 添加页面数据loading=true，用于显示“加载中”提示画面
-		page.data = $.extend(page.data, { loading: true });
 		// 插入工具函数
-		$(page).extend(pageUtils);
+		page = $.extend(pageExt, page);
 		
 		// 包装onLoad函数，进行加载时的通用操作
 		page._onLoad = page.onLoad;
@@ -330,7 +393,7 @@ let pageStaticFunctions = {
 			let _this = this;
 			_this.rawOptions = options;
 			_this.loadOptions = $.extend(Page.pullData('richData'), $.Url.fromParams(options));
-			_this.callChain.push(async () => pageOnLoad.call(_this));
+			_this._callChain.push(async () => pageOnLoad.call(_this));
 		};
 		
 		// 包装onShow函数，若当前页面正在加载（onLoad正在执行）则onShow函数将在页面
@@ -339,30 +402,14 @@ let pageStaticFunctions = {
 		page.onShow = async function() {
 			let _this = this;
 			_this.setLoading(true);
-			_this.callChain.push(async () => pageOnShow.call(_this));
+			_this._callChain.push(async () => pageOnShow.call(_this));
 			try {
-				await _this.runChain();
+				await pageRunChain(_this);
 				_this.setLoading(false);
 			} catch (ex) {
 				_this.setLoading(false, ex);
 			}
 		};
-		
-		// 若页面没有实现onPullDownRefresh函数，则为其实现默认逻辑为刷新整个页面的内容
-		if (!page.onPullDownRefresh) {
-			page.onPullDownRefresh = async function() {
-				if (this.chainRuning || this.data.loadingError) {
-					wx.stopPullDownRefresh();
-					return;
-				}
-				try {
-					await this.reloadPage(true);
-				} catch (ex) {
-					$.Modal.showError('页面刷新失败', ex);
-				}
-				wx.stopPullDownRefresh();
-			}
-		}
 		
 		// 调用小程序默认的Page函数进行页面初始化
 		originPageFunction(page);
