@@ -10,20 +10,21 @@
 					if (!result.hasUpdate)
 						resolve();
 					else
-						Page.current().setLoading("发现更新，正在下载…");
+						Page.current().setLoading("发现更新，正在下载");
 				});
-				updateManager.onUpdateFailed(async res => {
+				updateManager.onUpdateFailed(async () => {
 					await $.Modal.show('版本更新',
 						'更新下载失败。非最新版本的小程序可能无法正常运行。重启小程序可重新尝试更新。', {
 							showCancel: false
 						});
 					resolve();
 				});
-				updateManager.onUpdateReady(async res => {
+				updateManager.onUpdateReady(async () => {
 					await $.Modal.show('版本更新',
 						'更新已下载，点击确认完成更新并重启小程序。', {
 						showCancel: false
 					});
+					Page.current().setLoading("正在安装更新");
 					updateManager.applyUpdate();
 				});
 			});
