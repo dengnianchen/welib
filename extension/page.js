@@ -148,7 +148,7 @@ let pageExt = {
 	setLoading(loading, ex = null) {
 		if (loading === true)
 			this.setData({ loading: "加载中", loadingError: null });
-		else if (loading instanceof String)
+		else if (typeof(loading) === "string")
 			this.setData({ loading, loadingError: null });
 		else if (!loading) {
 			ex && console.log('加载失败', ex);
