@@ -74,7 +74,7 @@ async function pageOnShow() {
  * @author Deng Nianchen
  */
 async function pageRunChain() {
-	await $.App.waitForInitialize();
+	//await $.App.waitForInitialize();
 	try {
 		this._chainRuning = true;
 		for (let func of this._callChain)
@@ -194,6 +194,7 @@ let pageExt = {
 		try {
 			await pageReload.call(this);
 		} catch (ex) {
+			console.error(ex);
 			$.Modal.showError('页面刷新失败', ex);
 		}
 		wx.stopPullDownRefresh();
@@ -404,6 +405,7 @@ let pageStaticFunctions = {
 				await pageRunChain.call(this);
 				this.setLoading(false);
 			} catch (ex) {
+				console.error(ex);
 				this.setLoading(false, ex);
 			}
 		};
