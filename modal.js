@@ -49,24 +49,30 @@ class Modal {
 	 *
 	 * @param {string} title 提示框标题
 	 * @param {string} content 提示框内容
-	 * @param {object} options 可以指定除title, content, success, fail之外的其他选项，参考微信API文档：wx.showModal
-	 * @returns {Promise}
+	 * @param {object} options { cancelBtn, confirmBtn }，详见Wui-Dialog组件的属性
+	 *
+	 * @returns {Promise<boolean>}
 	 * @author Deng Nianchen
 	 */
 	static async show(title, content, options = {}) {
 		wx.hideToast();
-		return new Promise((resolve, reject) => {
-			wx.showModal($.extend(options, {
-				title,
-				content: !content ?
-					'' :
-					(content.constructor === String ?
-						content :
-						JSON.stringify(content)),
-				success: resolve,
-				fail: reject
-			}));
-		});
+		try {
+			return await $.Wui.Dialog.show($.extend(options, { title, content }));
+		} catch (ex) {
+			let wxModalOptions = {};
+			wxModalOptions.title = title;
+			wxModalOptions.content = content;
+			wxModalOptions.showCancel = options.cancelBtn;
+			wxModalOptions.cancelText = options.cancelBtn;
+			wxModalOptions.showConfirm = options.confirmBtn;
+			wxModalOptions.confirmText = options.confirmBtn;
+			return new Promise((resolve, reject) => {
+				wx.showModal($.extend(wxModalOptions, {
+					success: res => res.confirm ? resolve(true) : resolve(false),
+					fail: reject
+				}));
+			});
+		}
 	};
 	
 	/**
@@ -74,7 +80,8 @@ class Modal {
 	 *
 	 * @param title {string} 提示框标题
 	 * @param ex {string|$.Err|*} 异常信息
-	 * @returns {Promise}
+	 *
+	 * @returns {Promise<boolean>}
 	 * @author Deng Nianchen
 	 */
 	static showError(title, ex) {
@@ -88,7 +95,7 @@ class Modal {
 			errorMessage = ex.brief;
 		else
 			errorMessage = ex.toString();
-		return Modal.show(title, errorMessage, { showCancel: false });
+		return Modal.show(title, errorMessage);
 	};
 	
 }
