@@ -27,6 +27,26 @@ class _String {
 		});
 	}
 	
+	static toBoolean(str) {
+		if (str === 'True' || str === 'true' || str === '1')
+			return true;
+		if (str === 'False' || str === 'false' || str === '0')
+			return false;
+		return null;
+	}
+	
+	static toNumber(str) {
+		return parseFloat(str);
+	}
+	
+	static toType(str, type) {
+		switch (type) {
+			case 'number': case 'Number': return this.toNumber(str);
+			case 'boolean': case 'Boolean': return this.toBoolean(str);
+			case 'string': case 'String': return str;
+			default: return JSON.parse(str);
+		}
+	}
 }
 
 module.exports = _String;
