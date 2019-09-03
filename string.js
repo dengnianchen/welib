@@ -36,7 +36,10 @@ class _String {
 	}
 	
 	static toNumber(str) {
-		return parseFloat(str);
+		let value = parseFloat(str);
+		if (isNaN(value))
+			return null;
+		return value;
 	}
 	
 	static toType(str, type) {
