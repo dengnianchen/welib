@@ -18,25 +18,30 @@ class Wui {
 	}
 	
 	static applyStyle(stringFormatStyle, defaultStyle) {
-		stringFormatStyle = stringFormatStyle.replace(';', ',')
-			.replace(/([A-Za-z0-9\-]+):([^,]+)/g, function ($0, $1, $2) {
-				return `"${$.String.lowerDashToCamel($1)}":"${$2}"`;
-			});
-		let wuiStyleObject = JSON.parse("{" + stringFormatStyle + "}");
-		let mergedStyle = {};
-		for (let key in defaultStyle) {
-			if (!defaultStyle.hasOwnProperty(key))
-				continue;
-			if (wuiStyleObject.hasOwnProperty(key)) {
-				let value = $.String.toType(wuiStyleObject[key],
-					typeof(defaultStyle[key]));
-				mergedStyle[key] = value !== null && !isNaN(value)
-					? value
-					: defaultStyle[key];
-			} else
-				mergedStyle[key] = defaultStyle[key];
+		try {
+			stringFormatStyle = stringFormatStyle.replace(';', ',').
+				replace(/([A-Za-z0-9\-]+):([^,]+)/g, function($0, $1, $2) {
+					return `"${$.String.lowerDashToCamel($1)}":"${$2}"`;
+				});
+			let wuiStyleObject = JSON.parse("{" + stringFormatStyle + "}");
+			let mergedStyle = {};
+			for (let key in defaultStyle) {
+				if (!defaultStyle.hasOwnProperty(key))
+					continue;
+				if (wuiStyleObject.hasOwnProperty(key)) {
+					let value = $.String.toType(wuiStyleObject[key],
+						typeof (defaultStyle[key]));
+					mergedStyle[key] = value !== null && !isNaN(value)
+						? value
+						: defaultStyle[key];
+				} else
+					mergedStyle[key] = defaultStyle[key];
+			}
+			return mergedStyle;
+		} catch (ex) {
+			console.log(ex);
+			return defaultStyle;
 		}
-		return mergedStyle;
 	}
 }
 
